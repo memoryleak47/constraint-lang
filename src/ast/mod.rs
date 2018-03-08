@@ -12,7 +12,8 @@ pub struct Ast {
 #[derive(Debug)]
 pub enum AstNode {
 	VarDef(VarDef),
-	CDef(CDef)
+	CDef(CDef),
+	Expr(Expr)
 }
 
 // eg. `constraint X = {} | {};`

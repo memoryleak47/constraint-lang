@@ -44,7 +44,7 @@ named!(parse_c_expr_until_semicolon<CExpr>,
 	)
 );
 
-named!(parse_constraint<AstNode>,
+named!(parse_constraint_def<AstNode>,
     do_parse!(
         tag!("constraint") >>
         ignore1 >>
@@ -74,6 +74,7 @@ named!(parse_expr_until_semicolon<Expr>,
 );
 
 named!(parse_var_def<AstNode>,
+	// This split is necessary as `let x;`, `let x = 2;` and `x = 2;` are accepted, but `x;` is not.
 	alt!(
 		do_parse!( // parse `[let|global] x [= *]`;
 			prefix: alt!(tag!("let") | tag!("global")) >>
@@ -126,8 +127,17 @@ named!(parse_var_def<AstNode>,
 	)
 );
 
+named!(parse_expr_statement<AstNode>,
+	do_parse!(
+		expr: parse_expr_until_semicolon >>
+		tag!(";") >>
+		ignore0 >>
+		(AstNode::Expr(expr))
+	)
+);
+
 named!(parse_ast_node<AstNode>,
-	alt!(parse_constraint | parse_var_def)
+	alt!(parse_constraint_def | parse_var_def | parse_expr_statement)
 );
 
 named!(parse_ast<Ast>,
