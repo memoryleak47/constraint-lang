@@ -1,4 +1,4 @@
-use ast::{Ast, AstNode, ConstraintDef, LetExpression};
+use ast::*;
 
 use nom::{IResult, alpha, multispace};
 use std::str::from_utf8;
@@ -37,6 +37,13 @@ named!(ignore0<Vec<&[u8]>>,
 	))
 );
 
+named!(parse_c_expr_until_semicolon<CExpr>,
+	do_parse!(
+		val: take_until!(";") >>
+		(CExpr { val: from_utf8(val).unwrap().to_string() })
+	)
+);
+
 named!(parse_constraint<AstNode>,
     do_parse!(
         tag!("constraint") >>
@@ -46,31 +53,61 @@ named!(parse_constraint<AstNode>,
             from_utf8
         ) >>
         ignore0 >>
-        tag!("{") >>
+		tag!("=") >>
         ignore0 >>
-        tag!("}") >>
+		c_expr: parse_c_expr_until_semicolon >>
+        tag!(";") >>
         ignore0 >>
-        (AstNode::ConstraintDef(ConstraintDef { name: String::from(name) }))
+        (AstNode::CDef(CDef {
+			name: String::from(name),
+			body: c_expr
+		}))
     )
 );
 
-named!(parse_let<AstNode>,
+// TODO
+named!(parse_expr_until_semicolon<Expr>,
 	do_parse!(
-		tag!("let") >>
+		val: take_until!(";") >>
+		(Expr { val: from_utf8(val).unwrap().to_string() })
+	)
+);
+
+named!(parse_var_def<AstNode>,
+	do_parse!(
+		prefix: opt!(alt!(tag!("let") | tag!("global"))) >> // TODO doesn't yet work with prefix-less var_defs
 		ignore1 >>
 		name: map_res!(
 			alpha,
 			from_utf8
 		) >>
 		ignore0 >>
+		expr: opt!(
+			do_parse!(
+				tag!("=") >>
+				ignore0 >>
+				expr: parse_expr_until_semicolon >>
+				(expr)
+			)
+		) >>
 		tag!(";") >>
         ignore0 >>
-		(AstNode::LetExpression(LetExpression { name: String::from(name) }))
+		(AstNode::VarDef(VarDef {
+			name: String::from(name),
+			prefix: prefix.map(|x| {
+				match from_utf8(x).unwrap() {
+					"let" => VarDefPrefix::Let,
+					"global" => VarDefPrefix::Global,
+					_ => panic!("This should not happen!")
+				}
+			}),
+			expr
+		}))
 	)
 );
 
 named!(parse_ast_node<AstNode>,
-	alt!(parse_constraint | parse_let)
+	alt!(parse_constraint | parse_var_def)
 );
 
 named!(parse_ast<Ast>,
