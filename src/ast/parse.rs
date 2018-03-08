@@ -74,35 +74,55 @@ named!(parse_expr_until_semicolon<Expr>,
 );
 
 named!(parse_var_def<AstNode>,
-	do_parse!(
-		prefix: opt!(alt!(tag!("let") | tag!("global"))) >> // TODO doesn't yet work with prefix-less var_defs
-		ignore1 >>
-		name: map_res!(
-			alpha,
-			from_utf8
-		) >>
-		ignore0 >>
-		expr: opt!(
-			do_parse!(
-				tag!("=") >>
-				ignore0 >>
-				expr: parse_expr_until_semicolon >>
-				(expr)
-			)
-		) >>
-		tag!(";") >>
-        ignore0 >>
-		(AstNode::VarDef(VarDef {
-			name: String::from(name),
-			prefix: prefix.map(|x| {
-				match from_utf8(x).unwrap() {
-					"let" => VarDefPrefix::Let,
-					"global" => VarDefPrefix::Global,
-					_ => panic!("This should not happen!")
-				}
-			}),
-			expr
-		}))
+	alt!(
+		do_parse!( // parse `[let|global] x [= *]`;
+			prefix: alt!(tag!("let") | tag!("global")) >>
+			ignore1 >>
+			name: map_res!(
+				alpha,
+				from_utf8
+			) >>
+			ignore0 >>
+			expr: opt!(
+				do_parse!(
+					tag!("=") >>
+					ignore0 >>
+					expr: parse_expr_until_semicolon >>
+					(expr)
+				)
+			) >>
+			tag!(";") >>
+			ignore0 >>
+			(AstNode::VarDef(VarDef {
+				name: String::from(name),
+				prefix: Some(match from_utf8(prefix).unwrap() {
+						"let" => VarDefPrefix::Let,
+						"global" => VarDefPrefix::Global,
+						_ => panic!("This should not happen!")
+				}),
+				expr
+			}))
+		) |
+		do_parse!( // parse `x = *;`
+			name: map_res!(
+				alpha,
+				from_utf8
+			) >>
+			ignore0 >>
+			expr: do_parse!(
+					tag!("=") >>
+					ignore0 >>
+					expr: parse_expr_until_semicolon >>
+					(expr)
+			) >>
+			tag!(";") >>
+			ignore0 >>
+			(AstNode::VarDef(VarDef {
+				name: String::from(name),
+				prefix: None,
+				expr: Some(expr)
+			}))
+		)
 	)
 );
 
