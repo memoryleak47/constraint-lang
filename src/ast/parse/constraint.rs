@@ -2,6 +2,8 @@ use ast::*;
 use super::ignore::{ignore1, ignore0};
 use super::name::parse_name;
 
+use nom::IResult;
+
 named!(parse_c_expr_named<CExpr>,
 	do_parse!(
 		name: parse_name >>
@@ -26,22 +28,43 @@ named!(parse_c_expr_block<CExpr>,
 	)
 );
 
-named!(parse_c_expr_conjunction<CExpr>,
+fn parse_c_expr_conjunction(data: &[u8]) -> IResult<&[u8], CExpr> { // TODO this requires some refactoring
+	let out = parse_c_expr_conjunction_helper(data);
+	if let IResult::Done(d, (first, rest)) = out {
+		if rest.is_empty() { return ::nom::IResult::Error(::nom::ErrorKind::Custom(42)); }
+
+		return match rest.into_iter()
+			.fold(Some(first), |x, (del, expr)| {
+				if let Some(x) = x {
+					match del {
+						'&' => Some(CExpr::And(Box::new(x), Box::new(expr))),
+						'|' => Some(CExpr::Or(Box::new(x), Box::new(expr))),
+						_ => None,
+					}
+				} else { None }
+			}) {
+				Some(x) => ::nom::IResult::Done(d, x),
+				None => ::nom::IResult::Error(::nom::ErrorKind::Custom(42))
+			};
+	} else {
+		return ::nom::IResult::Error(::nom::ErrorKind::Custom(42));
+	}
+}
+
+named!(parse_c_expr_conjunction_helper<(CExpr, Vec<(char, CExpr)>)>,
 	do_parse!(
-		items: separated_list!(
-			do_parse!(char!('|') >> ignore0 >> (())), // TODO alt!(char!('|') | char!('&'))
-			parse_c_expr_no_conjunction
+		first: parse_c_expr_no_conjunction >>
+		rest: many0!(
+			do_parse!(
+				del: alt!(char!('|') | char!('&')) >>
+				ignore0 >>
+				expr: parse_c_expr_no_conjunction >>
+				ignore0 >>
+				((del, expr))
+			)
 		) >>
         ignore0 >>
-		({
-			if items.len() <= 1 { return ::nom::IResult::Error(::nom::ErrorKind::Custom(42)); }
-
-			let mut items = items;
-
-			let first = items.remove(0);
-			items.into_iter()
-				.fold(first, |x, y| CExpr::Or(Box::new(x), Box::new(y)))
-		})
+		(first, rest)
 	)
 );
 
