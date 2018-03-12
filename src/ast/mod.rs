@@ -2,6 +2,8 @@ mod parse;
 
 pub use self::parse::parse;
 
+use std::collections::HashMap;
+
 // C is short for Constraint
 
 #[derive(Debug)]
@@ -75,10 +77,12 @@ pub enum Expr {
 	}, // fun(x, y) { return x+y; }
 	String(String),
 	Var(String),
+	Null, // the `null` expression
 	Num(f64),
+	Bool(bool),
 	Array(Vec<Expr>),
 	Tuple(Vec<Expr>),
-	Object(Vec<(String, Box<Expr>)>) // { f = 2 }
+	Object(HashMap<String, Box<Expr>>) // { f = 2 }
 }
 
 #[derive(Debug)]
