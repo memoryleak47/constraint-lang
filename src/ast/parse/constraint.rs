@@ -1,9 +1,6 @@
 use ast::*;
-use nom::alpha;
 use super::ignore::{ignore1, ignore0};
 use super::name::parse_name;
-
-use std::str::from_utf8;
 
 named!(parse_c_expr_named<CExpr>,
 	do_parse!(
@@ -23,10 +20,7 @@ named!(pub parse_constraint_def<AstNode>,
     do_parse!(
         tag!("constraint") >>
         ignore1 >>
-        name: map_res!(
-            alpha,
-            from_utf8
-        ) >>
+        name: parse_name >>
         ignore0 >>
 		tag!("=") >>
         ignore0 >>

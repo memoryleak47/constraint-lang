@@ -1,7 +1,8 @@
 use ast::*;
-use nom::alpha;
+
 use super::ignore::*;
 use super::expr::*;
+use super::name::parse_name;
 
 use std::str::from_utf8;
 
@@ -11,10 +12,7 @@ named!(pub parse_var_def<AstNode>,
 		do_parse!( // parse `[let|global] x [= *]`;
 			prefix: alt!(tag!("let") | tag!("global")) >>
 			ignore1 >>
-			name: map_res!(
-				alpha,
-				from_utf8
-			) >>
+			name: parse_name >>
 			ignore0 >>
 			expr: opt!(
 				do_parse!(
@@ -37,10 +35,7 @@ named!(pub parse_var_def<AstNode>,
 			}))
 		) |
 		do_parse!( // parse `x = *;`
-			name: map_res!(
-				alpha,
-				from_utf8
-			) >>
+			name: parse_name >>
 			ignore0 >>
 			expr: do_parse!(
 					tag!("=") >>
