@@ -3,8 +3,7 @@ mod eval;
 
 use self::heap::Heap;
 use ctxt::Ctxt;
-use ast::AstNode;
-use ast::VarDef;
+use ast::{AstNode, VarDecPrefix, VarDec, VarSet};
 
 use std::collections::HashMap;
 
@@ -80,8 +79,16 @@ impl ExecState {
 
 	fn exec_node(&mut self, node: &AstNode, ctxt: &Ctxt) {
 		match node {
-			&AstNode::VarDef(VarDef { ref name, ref expr, ref prefix }) => {
-				// TODO eval the expr, and set the value!
+			&AstNode::VarDec(VarDec { ref name, ref prefix, .. }) => {
+				(match prefix {
+					&VarDecPrefix::Let => self.local_mut(),
+					&VarDecPrefix::Global => self.global_mut(),
+				}).insert(name.to_string(), None);
+			},
+			&AstNode::VarSet(VarSet { ref name, ref expr }) => {
+				let val = self.eval(expr, ctxt).unwrap();
+				let i = self.heap.alloc(val);
+				self.set_var(name, i);
 			},
 			&AstNode::Expr(ref expr) => {
 				self.eval(expr, ctxt);

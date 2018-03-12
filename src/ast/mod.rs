@@ -11,7 +11,8 @@ pub struct Ast {
 
 #[derive(Debug)]
 pub enum AstNode {
-	VarDef(VarDef),
+	VarDec(VarDec),
+	VarSet(VarSet),
 	CDef(CDef),
 	Expr(Expr)
 }
@@ -81,12 +82,19 @@ pub enum Expr {
 }
 
 #[derive(Debug)]
-pub enum VarDefPrefix { Let, Global }
+pub enum VarDecPrefix { Let, Global }
 
-// eg. `let x = 2;`
+// eg. `let x: Int;`
 #[derive(Debug)]
-pub struct VarDef {
+pub struct VarDec {
 	pub name: String,
-	pub expr: Option<Expr>,
-	pub prefix: Option<VarDefPrefix>
+	pub prefix: VarDecPrefix,
+	pub cexpr: Option<CExpr>
+}
+
+// eg. `x = 2;`
+#[derive(Debug)]
+pub struct VarSet {
+	pub name: String,
+	pub expr: Expr
 }
