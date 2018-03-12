@@ -2,11 +2,11 @@ mod build;
 
 pub use self::build::build;
 
+use ast::Ast;
 
-struct Command; // TODO
 struct CCtxt; // constraint context // TODO 
 
 pub struct Ctxt {
-	code: Vec<Command>,
+	ast: Ast,
 	cctxt: CCtxt
 }
