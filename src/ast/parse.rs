@@ -1,6 +1,6 @@
 use ast::*;
 
-use nom::{IResult, alpha, multispace};
+use nom::{IResult, alpha, multispace, ErrorKind};
 use std::str::from_utf8;
 
 named!(parse_one_line_comment,
@@ -37,10 +37,63 @@ named!(ignore0<Vec<&[u8]>>,
 	))
 );
 
-named!(parse_c_expr_until_semicolon<CExpr>,
+fn letter(data: &[u8]) -> IResult<&[u8], char> {
+	if let Some(&x) = data.get(0) {
+		let c = x as char;
+		if  (c >= 'a' && c <= 'z') ||
+			(c >= 'A' && c <= 'Z') {
+			return IResult::Done(&data[1..], c);
+		}
+	}
+
+	return IResult::Error(ErrorKind::Custom(42));
+}
+
+fn digit(data: &[u8]) -> IResult<&[u8], char> {
+	if let Some(&x) = data.get(0) {
+		let c = x as char;
+		if c.is_digit(10) {
+			return IResult::Done(&data[1..], c);
+		}
+	}
+
+	return IResult::Error(ErrorKind::Custom(42));
+}
+
+named!(init_name_letter<char>,
+	alt!(letter | char!('_'))
+);
+
+named!(name_letter<char>,
+	alt!(init_name_letter | digit)
+);
+
+named!(parse_name<String>,
 	do_parse!(
-		val: take_until!(";") >>
-		(CExpr { val: from_utf8(val).unwrap().to_string() })
+		initial: init_name_letter >>
+		rest: many1!(name_letter) >>
+		({
+			let mut x = String::new();
+			x.push(initial);
+
+			let rest_string: String = rest.into_iter().collect();
+			x.push_str(&rest_string);
+			x
+		})
+	)
+);
+
+named!(parse_c_expr_named<CExpr>,
+	do_parse!(
+		name: parse_name >>
+		(CExpr::Var { name })
+	)
+);
+
+named!(parse_c_expr_until_semicolon<CExpr>, // TODO add other CExpr types!
+	do_parse!(
+		v: parse_c_expr_named >>
+		(v)
 	)
 );
 

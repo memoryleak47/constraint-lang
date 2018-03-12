@@ -29,20 +29,12 @@ pub struct CBlock {
 	pub items: Vec<CItem>
 }
 
-/*
 #[derive(Debug)]
 pub enum CExpr {
 	And(Box<CExpr>, Box<CExpr>),
 	Or(Box<CExpr>, Box<CExpr>),
 	Var { name: String },
 	CBlock(CBlock)
-}
-*/
-
-// eg. `{} | {} & Null`
-#[derive(Debug)]
-pub struct CExpr { // TODO remove this
-	pub val: String
 }
 
 // eg. `f: function`
