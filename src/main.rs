@@ -3,16 +3,17 @@ extern crate nom;
 
 mod cli;
 mod ast;
+mod bc;
 mod exec;
 
 use cli::get_code;
-use ast::parse;
 use exec::exec;
 
 fn main2() -> Result<(), String> {
 	exec(
 		get_code()
-			.and_then(parse)?
+			.and_then(ast::parse)
+			.and_then(bc::build)?
 	);
 	Ok(())
 }
