@@ -5,6 +5,7 @@ use super::name::parse_name;
 named!(parse_c_expr_named<CExpr>,
 	do_parse!(
 		name: parse_name >>
+		ignore0 >>
 		(CExpr::Var { name })
 	)
 );
@@ -14,11 +15,11 @@ named!(parse_c_expr_block<CExpr>,
 		tag!("{") >>
         ignore0 >>
 		items: separated_list!(
-			tag!(","),
+			do_parse!(tag!(",") >> ignore0 >> (())),
 			parse_c_item
 		) >>
-        ignore0 >>
 		tag!("}") >>
+        ignore0 >>
 		(CExpr::CBlock(CBlock {
 			items
 		}))
@@ -57,6 +58,7 @@ named!(parse_c_item<CItem>,
 named!(parse_c_item_only_name<CItem>,
 	do_parse!(
 		name: parse_name >>
+		ignore0 >>
 		(CItem {
 			name,
 			c_expr: None
@@ -71,6 +73,7 @@ named!(parse_c_item_with_constraint<CItem>,
 		tag!(":") >>
 		ignore0 >>
 		c_expr: parse_c_expr >>
+		ignore0 >>
 		(CItem {
 			name,
 			c_expr: Some(c_expr)
