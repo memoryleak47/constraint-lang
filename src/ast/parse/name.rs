@@ -34,7 +34,7 @@ named!(name_letter<char>,
 named!(pub parse_name<String>,
 	do_parse!(
 		initial: init_name_letter >>
-		rest: many1!(name_letter) >>
+		rest: many0!(name_letter) >>
 		({
 			let mut x = String::new();
 			x.push(initial);
