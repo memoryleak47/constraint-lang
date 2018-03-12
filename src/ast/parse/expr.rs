@@ -1,7 +1,7 @@
 use ast::*;
 use super::ignore::ignore0;
 
-use nom::{IResult, digit};
+use nom::digit;
 
 use std::str::from_utf8;
 
