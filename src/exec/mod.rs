@@ -1,5 +1,5 @@
-use bc::BC;
+use ctxt::Ctxt;
 
-pub fn exec(_: BC) {
+pub fn exec(_: Ctxt) {
 	// TODO
 }
