@@ -52,7 +52,7 @@ named!(pub parse_constraint_def<AstNode>,
 // CItem parsing:
 
 named!(parse_c_item<CItem>,
-	alt!( parse_c_item_only_name | parse_c_item_with_constraint )
+	alt!( parse_c_item_with_constraint | parse_c_item_only_name )
 );
 
 named!(parse_c_item_only_name<CItem>,
