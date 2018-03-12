@@ -1,23 +1,17 @@
 use ast::*;
-use super::ignore::*;
+use super::ignore::ignore0;
 
-use std::str::from_utf8;
+use nom::IResult;
 
-// TODO
-named!(pub parse_expr_until_semicolon<Expr>,
-	do_parse!(
-		val: take_until!(";") >>
-		(Expr { val: from_utf8(val).unwrap().to_string() })
-	)
-);
+pub fn parse_expr(data: &[u8]) -> IResult<&[u8], Expr> {
+	unimplemented!()
+}
 
 named!(pub parse_expr_statement<AstNode>,
 	do_parse!(
-		expr: parse_expr_until_semicolon >>
+		expr: parse_expr >>
 		tag!(";") >>
 		ignore0 >>
 		(AstNode::Expr(expr))
 	)
 );
-
-

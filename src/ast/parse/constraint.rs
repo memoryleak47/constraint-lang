@@ -8,7 +8,7 @@ named!(parse_c_expr_named<CExpr>,
 	do_parse!(
 		name: parse_name >>
 		ignore0 >>
-		(CExpr::Var { name })
+		(CExpr::Var(name))
 	)
 );
 

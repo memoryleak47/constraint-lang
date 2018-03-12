@@ -18,7 +18,7 @@ named!(pub parse_var_def<AstNode>,
 				do_parse!(
 					tag!("=") >>
 					ignore0 >>
-					expr: parse_expr_until_semicolon >>
+					expr: parse_expr >>
 					(expr)
 				)
 			) >>
@@ -40,7 +40,7 @@ named!(pub parse_var_def<AstNode>,
 			expr: do_parse!(
 					tag!("=") >>
 					ignore0 >>
-					expr: parse_expr_until_semicolon >>
+					expr: parse_expr >>
 					(expr)
 			) >>
 			tag!(";") >>

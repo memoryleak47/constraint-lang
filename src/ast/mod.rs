@@ -33,7 +33,7 @@ pub struct CBlock {
 pub enum CExpr {
 	And(Box<CExpr>, Box<CExpr>),
 	Or(Box<CExpr>, Box<CExpr>),
-	Var { name: String },
+	Var(String),
 	CBlock(CBlock)
 }
 
@@ -44,10 +44,40 @@ pub struct CItem {
 	pub c_expr: Option<CExpr>
 }
 
+#[derive(Debug)]
+pub enum Op1 {
+	Minus, // -f
+	Len // #array
+}
+
+#[derive(Debug)]
+pub enum Op2 {
+	Plus, // a + b
+	Minus, // a - b
+	Mul, // a * b
+	Div, // a / b
+	Mod, // a % b
+}
+
 // eg. `1+foo() > "nice"`
 #[derive(Debug)]
-pub struct Expr {
-	pub val: String // TODO make this more precise
+pub enum Expr {
+	Op1(Op1, Box<Expr>),
+	Op2(Box<Expr>, Op2, Box<Expr>),
+	FunCall { // f(x, y)
+		fun: Box<Expr>,
+		args: Vec<Expr>
+	},
+	Fun {
+		signature: Vec<(String, Option<CExpr>)>,
+		body: Ast
+	}, // fun(x, y) { return x+y; }
+	String(String),
+	Var(String),
+	Num(f64),
+	Array(Vec<Expr>),
+	Tuple(Vec<Expr>),
+	Object(Vec<(String, Box<Expr>)>) // { f = 2 }
 }
 
 #[derive(Debug)]
