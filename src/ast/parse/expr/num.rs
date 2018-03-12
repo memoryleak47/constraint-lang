@@ -1,5 +1,5 @@
 use ast::*;
-use super::ignore::ignore0;
+use super::super::ignore::ignore0;
 
 use nom::digit;
 
@@ -17,7 +17,7 @@ named!(parse_expr_pos_num<f64>,
 	alt!( parse_expr_pos_int ) // TODO add floating point parser!
 );
 
-named!(parse_expr_num<Expr>,
+named!(pub parse_expr_num<Expr>,
 	do_parse!(
 		negative: opt!(char!('-')) >>
 		ignore0 >>
@@ -30,21 +30,5 @@ named!(parse_expr_num<Expr>,
 				Expr::Num(num)
 			}
 		})
-	)
-);
-
-named!(pub parse_expr<Expr>,
-	do_parse!(
-		x: parse_expr_num >>
-		(x)
-	)
-);
-
-named!(pub parse_expr_statement<AstNode>,
-	do_parse!(
-		expr: parse_expr >>
-		tag!(";") >>
-		ignore0 >>
-		(AstNode::Expr(expr))
 	)
 );
