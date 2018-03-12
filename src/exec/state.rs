@@ -12,4 +12,8 @@ impl ExecState {
 			ip: 0
 		}
 	}
+
+	pub fn run(&mut self) {
+		unimplemented!()
+	}
 }
