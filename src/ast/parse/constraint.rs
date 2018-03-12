@@ -29,10 +29,7 @@ named!(parse_c_expr_block<CExpr>,
 );
 
 fn parse_c_expr_conjunction(data: &[u8]) -> IResult<&[u8], CExpr> { // TODO this requires some refactoring
-	let out = parse_c_expr_conjunction_helper(data);
-	if let IResult::Done(d, (first, rest)) = out {
-		if rest.is_empty() { return ::nom::IResult::Error(::nom::ErrorKind::Custom(42)); }
-
+	if let IResult::Done(d, (first, rest)) = parse_c_expr_conjunction_helper(data) {
 		return match rest.into_iter()
 			.fold(Some(first), |x, (del, expr)| {
 				if let Some(x) = x {
@@ -54,7 +51,7 @@ fn parse_c_expr_conjunction(data: &[u8]) -> IResult<&[u8], CExpr> { // TODO this
 named!(parse_c_expr_conjunction_helper<(CExpr, Vec<(char, CExpr)>)>,
 	do_parse!(
 		first: parse_c_expr_no_conjunction >>
-		rest: many0!(
+		rest: many1!(
 			do_parse!(
 				del: alt!(char!('|') | char!('&')) >>
 				ignore0 >>
