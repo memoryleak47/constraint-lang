@@ -28,7 +28,6 @@ named!(parse_ast<Ast>,
 
 pub fn parse(s: String) -> Result<Ast, String> {
 	let parsed = parse_ast(s.as_bytes());
-	println!("{:?}", parsed);
 
 	match parsed {
 		IResult::Done(rest, x) => {
