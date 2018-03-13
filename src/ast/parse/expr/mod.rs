@@ -160,6 +160,6 @@ fn test_fun_call_expr() {
 
 	let x = parse_expr("2(2,3)".as_bytes());
 	println!("{:?}", x);
-	if let IResult::Done(_, Expr::FunCall { .. }) = x {
+	if let IResult::Done(_, Expr::PostOp(_, PostOp::FunCall(_))) = x {
 	} else { assert!(false); }
 }
