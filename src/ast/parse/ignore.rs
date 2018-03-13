@@ -19,7 +19,7 @@ named!(parse_multiline_comment,
 );
 
 named!(pub ignore1<Vec<&[u8]>>,
-	many1!(alt!(
+	many1!(alt_complete!(
 		multispace
 		| parse_multiline_comment
 		| parse_one_line_comment
@@ -27,7 +27,7 @@ named!(pub ignore1<Vec<&[u8]>>,
 );
 
 named!(pub ignore0<Vec<&[u8]>>,
-	many0!(alt!(
+	many0!(alt_complete!(
 		multispace
 		| parse_multiline_comment
 		| parse_one_line_comment

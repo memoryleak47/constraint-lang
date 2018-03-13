@@ -16,7 +16,7 @@ named!(parse_c_expr_block<CExpr>,
 	do_parse!(
 		tag!("{") >>
         ignore0 >>
-		items: separated_list!(
+		items: separated_list_complete!(
 			do_parse!(tag!(",") >> ignore0 >> (())),
 			parse_c_item
 		) >>
@@ -53,7 +53,7 @@ named!(parse_c_expr_conjunction_helper<(CExpr, Vec<(char, CExpr)>)>,
 		first: parse_c_expr_no_conjunction >>
 		rest: many1!(
 			do_parse!(
-				del: alt!(char!('|') | char!('&')) >>
+				del: alt_complete!(char!('|') | char!('&')) >>
 				ignore0 >>
 				expr: parse_c_expr_no_conjunction >>
 				ignore0 >>
@@ -77,11 +77,11 @@ named!(parse_c_expr_inner<CExpr>,
 );
 
 named!(pub parse_c_expr_no_conjunction<CExpr>,
-	alt!(parse_c_expr_inner | parse_c_expr_named | parse_c_expr_block)
+	alt_complete!(parse_c_expr_inner | parse_c_expr_named | parse_c_expr_block)
 );
 
 named!(pub parse_c_expr<CExpr>,
-	alt!(parse_c_expr_conjunction | parse_c_expr_no_conjunction)
+	alt_complete!(parse_c_expr_conjunction | parse_c_expr_no_conjunction)
 );
 
 named!(pub parse_constraint_def<AstNode>,
@@ -106,7 +106,7 @@ named!(pub parse_constraint_def<AstNode>,
 // CItem parsing:
 
 named!(parse_c_item<CItem>,
-	alt!( parse_c_item_with_constraint | parse_c_item_only_name )
+	alt_complete!( parse_c_item_with_constraint | parse_c_item_only_name )
 );
 
 named!(parse_c_item_only_name<CItem>,

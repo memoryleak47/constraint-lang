@@ -15,7 +15,7 @@ use nom::IResult;
 use std::str::from_utf8;
 
 named!(parse_ast_node<AstNode>,
-	alt!(parse_constraint_def | parse_var_def | parse_expr_statement)
+	alt_complete!(parse_constraint_def | parse_var_def | parse_expr_statement)
 );
 
 named!(parse_ast<Ast>,
@@ -37,4 +37,9 @@ pub fn parse(s: String) -> Result<Ast, String> {
 		},
 		_ => panic!("TODO")
 	}
+}
+
+#[test]
+fn test_fun_call() {
+	assert!(parse("2(2,3);".to_string()).is_ok());
 }
