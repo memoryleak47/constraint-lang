@@ -27,7 +27,8 @@ impl ExecState {
 				if let &Expr::Var(ref s) = &**fun {
 					if s == "print" {
 						for arg in args {
-							println!("{:?}", arg);
+							let val = self.eval(arg, ctxt).unwrap();
+							println!("{:?}", val);
 						}
 						return None;
 					}
@@ -35,6 +36,11 @@ impl ExecState {
 				unimplemented!()
 			},
 			// &Expr::Fun { .. } => Some(Val::Fun(x)),
+			&Expr::Var(ref name) => {
+				self.get_var(name)
+					.and_then(|i| self.heap.get(i))
+					.map(|x| x.clone())
+			}
 			_ => unimplemented!(),
 		}
 	}

@@ -7,6 +7,7 @@ use ast::{AstNode, VarDecPrefix, VarDec, VarSet};
 
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 pub enum Val {
 	Null,
 	Bool(bool),
