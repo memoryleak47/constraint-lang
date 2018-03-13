@@ -8,7 +8,7 @@ named!(pub parse_expr_opt_fun_call<Expr>,
 	do_parse!(
 		fun: parse_expr_non_fun_call >>
 		ignore0 >>
-		opt_args: opt!(
+		calls: many0!( // f()() -> calls.len() == 2
 			do_parse!(
 				tag!("(") >>
 				ignore0 >>
@@ -22,10 +22,12 @@ named!(pub parse_expr_opt_fun_call<Expr>,
 			)
 		) >>
 		({
-			match opt_args {
-				Some(args) => Expr::FunCall { fun: Box::new(fun), args },
-				None => fun
+			let mut x = fun;
+			for y in calls {
+				x = Expr::FunCall { fun: Box::new(x), args: y };
 			}
+
+			x
 		})
 	)
 );
