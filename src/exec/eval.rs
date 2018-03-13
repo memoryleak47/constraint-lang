@@ -23,6 +23,17 @@ impl ExecState {
 						(key.to_string(), Box::new(self.eval(e, ctxt).unwrap()))
 					).collect()
 			)),
+			&Expr::FunCall { ref fun, ref args } => {
+				if let &Expr::Var(ref s) = &**fun {
+					if s == "print" {
+						for arg in args {
+							println!("{:?}", arg);
+						}
+						return None;
+					}
+				}
+				unimplemented!()
+			},
 			// &Expr::Fun { .. } => Some(Val::Fun(x)),
 			_ => unimplemented!(),
 		}
