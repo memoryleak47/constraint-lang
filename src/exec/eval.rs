@@ -1,4 +1,4 @@
-use ast::{Expr, PostOp};
+use ast::{Expr, PostOp, Op2};
 use ctxt::Ctxt;
 use super::{ExecState, Val};
 
@@ -34,6 +34,21 @@ impl ExecState {
 					}
 				}
 				unimplemented!()
+			},
+			&Expr::Op2(ref a, ref op, ref b) => {
+				let a = self.eval(a, ctxt).unwrap();
+				let b = self.eval(b, ctxt).unwrap();
+
+				let a = if let Val::Num(x) = a { x } else { panic!("addition on non-num value"); };
+				let b = if let Val::Num(x) = b { x } else { panic!("addition on non-num value"); };
+
+				Some(Val::Num(match op {
+					&Op2::Plus => a + b,
+					&Op2::Minus => a - b,
+					&Op2::Mul => a * b,
+					&Op2::Div => a / b,
+					&Op2::Mod => a % b,
+				}))
 			},
 			// &Expr::Fun { .. } => Some(Val::Fun(x)),
 			&Expr::Var(ref name) => {
