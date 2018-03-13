@@ -47,10 +47,34 @@ pub struct CItem {
 	pub c_expr: Option<CExpr>
 }
 
+trait Op {
+	fn prio(&self) -> u8;
+}
+
 #[derive(Debug)]
-pub enum Op1 {
-	Minus, // -f
-	Len // #array
+pub enum PreOp {
+	Minus // -f
+}
+
+impl Op for PreOp {
+	fn prio(&self) -> u8 {
+		match self {
+			&PreOp::Minus => 9
+		}
+	}
+}
+
+#[derive(Debug)]
+pub enum PostOp {
+	FunCall(Vec<Expr>) // args
+}
+
+impl Op for PostOp {
+	fn prio(&self) -> u8 {
+		match self {
+			&PostOp::FunCall(_) => 10
+		}
+	}
 }
 
 #[derive(Debug)]
@@ -62,15 +86,24 @@ pub enum Op2 {
 	Mod, // a % b
 }
 
+impl Op for Op2 {
+	fn prio(&self) -> u8 {
+		match self {
+			&Op2::Plus => 5,
+			&Op2::Minus => 5,
+			&Op2::Mul => 6,
+			&Op2::Div => 6,
+			&Op2::Mod => 6,
+		}
+	}
+}
+
 // eg. `1+foo() > "nice"`
 #[derive(Debug)]
 pub enum Expr {
-	Op1(Op1, Box<Expr>),
+	PreOp(PreOp, Box<Expr>),
+	PostOp(Box<Expr>, PostOp),
 	Op2(Box<Expr>, Op2, Box<Expr>),
-	FunCall { // f(x, y)
-		fun: Box<Expr>,
-		args: Vec<Expr>
-	},
 	Fun {
 		signature: Vec<(String, Option<CExpr>)>,
 		body: Ast

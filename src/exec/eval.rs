@@ -1,4 +1,4 @@
-use ast::Expr;
+use ast::{Expr, PostOp};
 use ctxt::Ctxt;
 use super::{ExecState, Val};
 
@@ -23,11 +23,11 @@ impl ExecState {
 						(key.to_string(), Box::new(self.eval(e, ctxt).unwrap()))
 					).collect()
 			)),
-			&Expr::FunCall { ref fun, ref args } => {
+			&Expr::PostOp(ref fun, PostOp::FunCall(ref args)) => {
 				if let &Expr::Var(ref s) = &**fun {
 					if s == "print" {
 						for arg in args {
-							let val = self.eval(arg, ctxt).unwrap();
+							let val = self.eval(&arg, ctxt).unwrap();
 							println!("{:?}", val);
 						}
 						return None;
