@@ -11,6 +11,14 @@ named!(pub parse_fun_call<PostOp>,
 			do_parse!( tag!(",") >> ignore0 >> (())),
 			parse_expr
 		) >>
-		( PostOp::FunCall(args) )
+		tag!(")") >>
+		ignore0 >>
+		(PostOp::FunCall(args))
 	)
 );
+
+#[test]
+fn test1() {
+	let (i, o) = parse_fun_call("(2,3)".as_bytes()).unwrap();
+	assert!(i.is_empty());
+}

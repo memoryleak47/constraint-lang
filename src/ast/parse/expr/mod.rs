@@ -19,7 +19,7 @@ named!(pub parse_expr_non_fun_call<Expr>,
 
 named!(parse_pre_op<PreOp>,
 	do_parse!(
-		op: alt!(char!('-')) >>
+		op: alt_complete!(char!('-')) >>
 		ignore0 >>
 		(match op {
 			'-' => PreOp::Minus,
@@ -29,16 +29,30 @@ named!(parse_pre_op<PreOp>,
 );
 
 named!(parse_post_op<PostOp>,
-	alt!( parse_fun_call )
+	do_parse!(
+		x: parse_fun_call >>
+		(x)
+	)
 );
 
 named!(parse_main_expr<Expr>,
-	alt!(parse_expr_num | parse_expr_bool | parse_expr_var | parse_expr_inner)
+	alt_complete!(parse_expr_num | parse_expr_bool | parse_expr_var | parse_expr_inner)
+);
+
+named!(parse_expr_inner<Expr>,
+	do_parse!(
+		tag!("(") >>
+		ignore0 >>
+		expr: parse_expr >>
+		tag!(")") >>
+		ignore0 >>
+		(expr)
+	)
 );
 
 named!(parse_op2<Op2>,
 	do_parse!(
-		op: alt!(tag!("+") | tag!("-") | tag!("*") | tag!("/") | tag!("%")) >>
+		op: alt_complete!(tag!("+") | tag!("-") | tag!("*") | tag!("/") | tag!("%")) >>
 		ignore0 >>
 		(match from_utf8(op).unwrap() {
 			"+" => Op2::Plus,
@@ -79,6 +93,8 @@ fn assemble_expr(init: InitType, mut tail: Vec<TailElem>) -> Expr {
 	// last PostOp?
 	if let Some(&(_, _, _, ref post_op)) = tail.last() {
 		lowest_prio = min(lowest_prio, prio(post_op.as_ref()));
+	} else {
+		lowest_prio = min(lowest_prio, prio(init.2.as_ref()));
 	}
 
 	// there are no more operators!
@@ -108,7 +124,11 @@ fn assemble_expr(init: InitType, mut tail: Vec<TailElem>) -> Expr {
 
 		tail.push((op2, pre_op, main_expr, None));
 		return Expr::PostOp(Box::new(assemble_expr(init, tail)), post_op.unwrap())
-	} { panic!("This should not happen"); }
+	} else {
+		assert!(lowest_prio == prio(init.2.as_ref()));
+
+		return Expr::PostOp(Box::new(assemble_expr((init.0, init.1, None), tail)), init.2.unwrap());
+	}
 }
 
 named!(pub parse_expr<Expr>,
@@ -138,17 +158,6 @@ named!(pub parse_expr_statement<AstNode>,
 	)
 );
 
-named!(parse_expr_inner<Expr>,
-	do_parse!(
-		tag!("(") >>
-		ignore0 >>
-		expr: parse_expr >>
-		tag!(")") >>
-		ignore0 >>
-		(expr)
-	)
-);
-
 #[test]
 fn test_fun_call_expr_statement() {
 	assert!(parse_expr_statement("2(2,3);".as_bytes()).unwrap().0.is_empty());
@@ -158,8 +167,9 @@ fn test_fun_call_expr_statement() {
 fn test_fun_call_expr() {
 	use nom::IResult;
 
-	let x = parse_expr("2(2,3)".as_bytes());
-	println!("{:?}", x);
-	if let IResult::Done(_, Expr::PostOp(_, PostOp::FunCall(_))) = x {
-	} else { assert!(false); }
+	let (i, o)  = parse_expr("2(2,3)".as_bytes()).unwrap();
+	assert!(i.is_empty());
+
+	println!("{:?}", o);
+	assert!(if let Expr::PostOp(_, PostOp::FunCall(_)) = o { true } else { false } );
 }
