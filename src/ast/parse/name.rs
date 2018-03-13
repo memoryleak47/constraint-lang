@@ -23,11 +23,11 @@ fn digit(data: &[u8]) -> IResult<&[u8], char> {
 	return IResult::Error(ErrorKind::Custom(42));
 }
 
-named!(init_name_letter<char>,
+named!(pub init_name_letter<char>,
 	alt!(letter | char!('_'))
 );
 
-named!(name_letter<char>,
+named!(pub name_letter<char>,
 	alt!(init_name_letter | digit)
 );
 

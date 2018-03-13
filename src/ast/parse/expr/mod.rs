@@ -1,15 +1,17 @@
 mod num;
+mod bool;
 mod var;
 mod fun_call;
 
 use self::num::parse_expr_num;
+use self::bool::parse_expr_bool;
 use self::var::parse_expr_var;
 
 use ast::*;
 use super::ignore::ignore0;
 
 named!(pub parse_expr_non_fun_call<Expr>,
-	alt_complete!( parse_expr_num | parse_expr_var )
+	alt_complete!( parse_expr_num | parse_expr_bool | parse_expr_var )
 );
 
 pub use self::fun_call::parse_expr_opt_fun_call as parse_expr;
