@@ -78,6 +78,14 @@ impl ExecState {
 					.and_then(|i| self.heap.get(i))
 					.map(|x| x.clone())
 			},
+			&Expr::If { ref condition, ref body } => {
+				if let Val::Bool(true) = self.eval(&**condition, ctxt).unwrap() {
+					for node in body.nodes.iter() {
+						self.exec_node(node, ctxt);
+					}
+					return None; // maybe let it return something later
+				} else { None }
+			},
 			_ => unimplemented!(),
 		}
 	}

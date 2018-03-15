@@ -115,7 +115,12 @@ pub enum Expr {
 	Bool(bool),
 	Array(Vec<Expr>),
 	Tuple(Vec<Expr>),
-	Object(HashMap<String, Box<Expr>>) // { f = 2 }
+	Object(HashMap<String, Box<Expr>>), // { f = 2 }
+
+	If {
+		condition: Box<Expr>,
+		body: Ast
+	}
 }
 
 #[derive(Debug, Clone)]

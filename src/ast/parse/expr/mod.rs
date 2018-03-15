@@ -1,13 +1,15 @@
 mod num;
 mod bool;
 mod var;
+mod if_;
 mod fun;
 mod fun_call;
 
 use self::num::parse_expr_num;
 use self::bool::parse_expr_bool;
 use self::var::parse_expr_var;
-use self::fun::parse_fun;
+use self::if_::parse_expr_if;
+use self::fun::parse_expr_fun;
 use self::fun_call::parse_fun_call;
 
 use ast::*;
@@ -34,7 +36,7 @@ named!(parse_post_op<PostOp>,
 );
 
 named!(pub parse_main_expr<Expr>,
-	alt_complete!(parse_expr_num | parse_expr_bool | parse_expr_inner | parse_fun | parse_expr_var ) // parse_expr_var has to be behind parse_fun as it will thinks `fun` is a var
+	alt_complete!(parse_expr_num | parse_expr_bool | parse_expr_inner | parse_expr_if | parse_expr_fun | parse_expr_var ) // parse_expr_var has to be behind parse_fun as it will thinks `fun` is a var
 );
 
 named!(parse_expr_inner<Expr>,
