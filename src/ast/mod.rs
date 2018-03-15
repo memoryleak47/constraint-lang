@@ -6,12 +6,12 @@ use std::collections::HashMap;
 
 // C is short for Constraint
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Ast {
 	pub nodes: Vec<AstNode>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AstNode {
 	VarDec(VarDec),
 	VarSet(VarSet),
@@ -20,19 +20,19 @@ pub enum AstNode {
 }
 
 // eg. `constraint X = {} | {};`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CDef {
 	pub name: String,
 	pub body: CExpr
 }
 
 // eg. `{ f: Float, g: Int }`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CBlock {
 	pub items: Vec<CItem>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum CExpr {
 	And(Box<CExpr>, Box<CExpr>),
 	Or(Box<CExpr>, Box<CExpr>),
@@ -41,7 +41,7 @@ pub enum CExpr {
 }
 
 // eg. `f: function`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct CItem {
 	pub name: String,
 	pub c_expr: Option<CExpr>
@@ -51,7 +51,7 @@ trait Op {
 	fn prio(&self) -> u8;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PreOp {
 	Minus // -f
 }
@@ -64,7 +64,7 @@ impl Op for PreOp {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PostOp {
 	FunCall(Vec<Expr>) // args
 }
@@ -77,7 +77,7 @@ impl Op for PostOp {
 	}
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Op2 {
 	Plus, // a + b
 	Minus, // a - b
@@ -99,7 +99,7 @@ impl Op for Op2 {
 }
 
 // eg. `1+foo() > "nice"`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expr {
 	PreOp(PreOp, Box<Expr>),
 	PostOp(Box<Expr>, PostOp),
@@ -118,11 +118,11 @@ pub enum Expr {
 	Object(HashMap<String, Box<Expr>>) // { f = 2 }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum VarDecPrefix { Let, Global }
 
 // eg. `let x: Int;`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarDec {
 	pub name: String,
 	pub prefix: VarDecPrefix,
@@ -130,7 +130,7 @@ pub struct VarDec {
 }
 
 // eg. `x = 2;`
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct VarSet {
 	pub name: String,
 	pub expr: Expr

@@ -3,7 +3,7 @@ mod eval;
 
 use self::heap::Heap;
 use ctxt::Ctxt;
-use ast::{AstNode, VarDecPrefix, VarDec, VarSet};
+use ast::{Ast, CItem, AstNode, VarDecPrefix, VarDec, VarSet};
 
 use std::collections::HashMap;
 
@@ -16,7 +16,7 @@ pub enum Val {
 	Array(Vec<Val>),
 	Tuple(Vec<Val>),
 	Object(HashMap<String, Box<Val>>),
-	Fun // TODO add members
+	Fun { signature: Vec<CItem>, body: Ast }
 }
 
 // The mutable part of the Execution Environment
@@ -55,7 +55,7 @@ impl ExecState {
 	}
 
 	fn find_var(&self, name: &str) -> Option<usize> {
-		for (i, scope) in self.stack.iter().rev().enumerate() { 
+		for (i, scope) in self.stack.iter().enumerate().rev() { 
 			if scope.get(name).is_some() { return Some(i); }
 		}
 		None
@@ -78,7 +78,7 @@ impl ExecState {
 		}
 	}
 
-	fn exec_node(&mut self, node: &AstNode, ctxt: &Ctxt) {
+	pub fn exec_node(&mut self, node: &AstNode, ctxt: &Ctxt) {
 		match node {
 			&AstNode::VarDec(VarDec { ref name, ref prefix, .. }) => {
 				(match prefix {
