@@ -53,13 +53,15 @@ trait Op {
 
 #[derive(Debug, Clone)]
 pub enum PreOp {
-	Minus // -f
+	Minus, // -f
+	Not, // !b
 }
 
 impl Op for PreOp {
 	fn prio(&self) -> u8 {
 		match self {
-			&PreOp::Minus => 9
+			&PreOp::Minus => 9,
+			&PreOp::Not => 9,
 		}
 	}
 }
@@ -79,6 +81,14 @@ impl Op for PostOp {
 
 #[derive(Debug, Clone)]
 pub enum Op2 {
+	LessEq,
+	Eq,
+	GreaterEq,
+	NotEq,
+
+	Less,
+	Greater,
+
 	Plus, // a + b
 	Minus, // a - b
 	Mul, // a * b
@@ -89,6 +99,14 @@ pub enum Op2 {
 impl Op for Op2 {
 	fn prio(&self) -> u8 {
 		match self {
+			&Op2::LessEq => 8,
+			&Op2::Eq => 7,
+			&Op2::GreaterEq => 8,
+			&Op2::NotEq => 7,
+
+			&Op2::Less => 8,
+			&Op2::Greater => 8,
+
 			&Op2::Plus => 5,
 			&Op2::Minus => 5,
 			&Op2::Mul => 6,

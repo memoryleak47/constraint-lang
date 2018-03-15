@@ -19,10 +19,13 @@ use std::str::from_utf8;
 
 named!(parse_pre_op<PreOp>,
 	do_parse!(
-		op: alt_complete!(char!('-')) >>
+		op: alt_complete!(char!('-')
+						| char!('!')
+		) >>
 		ignore0 >>
 		(match op {
 			'-' => PreOp::Minus,
+			'!' => PreOp::Not,
 			_ => panic!("This should not happen!")
 		})
 	)
@@ -52,9 +55,30 @@ named!(parse_expr_inner<Expr>,
 
 named!(parse_op2<Op2>,
 	do_parse!(
-		op: alt_complete!(tag!("+") | tag!("-") | tag!("*") | tag!("/") | tag!("%")) >>
+		op: alt_complete!(tag!("<=")
+						| tag!("==")
+						| tag!(">=")
+						| tag!("!=")
+
+						| tag!("<")
+						| tag!(">")
+
+						| tag!("+")
+						| tag!("-")
+						| tag!("*")
+						| tag!("/")
+						| tag!("%")
+		) >>
 		ignore0 >>
 		(match from_utf8(op).unwrap() {
+			"<=" => Op2::LessEq,
+			"==" => Op2::Eq,
+			">=" => Op2::GreaterEq,
+			"!=" => Op2::NotEq,
+
+			"<" => Op2::Less,
+			">" => Op2::Greater,
+
 			"+" => Op2::Plus,
 			"-" => Op2::Minus,
 			"*" => Op2::Mul,

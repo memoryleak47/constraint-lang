@@ -61,16 +61,24 @@ impl ExecState {
 				let a = self.eval(a, ctxt).unwrap();
 				let b = self.eval(b, ctxt).unwrap();
 
-				let a = if let Val::Num(x) = a { x } else { panic!("addition on non-num value"); };
-				let b = if let Val::Num(x) = b { x } else { panic!("addition on non-num value"); };
+				let a = if let Val::Num(x) = a { x } else { panic!("operation on non-num value"); };
+				let b = if let Val::Num(x) = b { x } else { panic!("operation on non-num value"); };
 
-				Some(Val::Num(match op {
-					&Op2::Plus => a + b,
-					&Op2::Minus => a - b,
-					&Op2::Mul => a * b,
-					&Op2::Div => a / b,
-					&Op2::Mod => a % b,
-				}))
+				Some(match op {
+					&Op2::LessEq => Val::Bool(a <= b),
+					&Op2::Eq => Val::Bool(a == b),
+					&Op2::GreaterEq => Val::Bool(a >= b),
+					&Op2::NotEq => Val::Bool(a != b),
+
+					&Op2::Less => Val::Bool(a < b),
+					&Op2::Greater => Val::Bool(a > b),
+
+					&Op2::Plus => Val::Num(a + b),
+					&Op2::Minus => Val::Num(a - b),
+					&Op2::Mul => Val::Num(a * b),
+					&Op2::Div => Val::Num(a / b),
+					&Op2::Mod => Val::Num(a % b),
+				})
 			},
 			&Expr::Fun { ref signature, ref body } => Some(Val::Fun { signature: signature.clone(), body: body.clone() }),
 			&Expr::Var(ref name) => {
