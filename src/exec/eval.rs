@@ -55,7 +55,7 @@ impl ExecState {
 				self.get_var(name)
 					.and_then(|i| self.heap.get(i))
 					.map(|x| x.clone())
-			}
+			},
 			_ => unimplemented!(),
 		}
 	}

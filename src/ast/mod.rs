@@ -105,7 +105,7 @@ pub enum Expr {
 	PostOp(Box<Expr>, PostOp),
 	Op2(Box<Expr>, Op2, Box<Expr>),
 	Fun {
-		signature: Vec<(String, Option<CExpr>)>,
+		signature: Vec<CItem>,
 		body: Ast
 	}, // fun(x, y) { return x+y; }
 	String(String),

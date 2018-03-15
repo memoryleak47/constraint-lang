@@ -12,14 +12,18 @@ named!(parse_c_expr_named<CExpr>,
 	)
 );
 
+named!(pub parse_c_items<Vec<CItem>>,
+	separated_list_complete!(
+		do_parse!(tag!(",") >> ignore0 >> (())),
+		parse_c_item
+	)
+);
+
 named!(parse_c_expr_block<CExpr>,
 	do_parse!(
 		tag!("{") >>
         ignore0 >>
-		items: separated_list_complete!(
-			do_parse!(tag!(",") >> ignore0 >> (())),
-			parse_c_item
-		) >>
+		items: parse_c_items >>
 		tag!("}") >>
         ignore0 >>
 		(CExpr::CBlock(CBlock {

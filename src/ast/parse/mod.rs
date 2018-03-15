@@ -18,7 +18,7 @@ named!(parse_ast_node<AstNode>,
 	alt_complete!(parse_constraint_def | parse_var_def | parse_expr_statement)
 );
 
-named!(parse_ast<Ast>,
+named!(pub parse_ast<Ast>,
 	do_parse!(
 		ignore0 >>
 		nodes: many0!(parse_ast_node) >>
