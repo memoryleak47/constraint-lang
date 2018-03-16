@@ -16,7 +16,8 @@ pub enum AstNode {
 	VarDec(VarDec),
 	VarSet(VarSet),
 	CDef(CDef),
-	Expr(Expr)
+	Expr(Expr),
+	Return(Expr),
 }
 
 // eg. `constraint X = {} | {};`

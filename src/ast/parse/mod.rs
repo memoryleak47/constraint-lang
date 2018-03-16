@@ -1,11 +1,13 @@
 mod name;
 mod keyword;
 mod ignore;
+mod return_;
 mod var_def;
 mod expr;
 mod constraint;
 
 use self::ignore::ignore0;
+use self::return_::parse_return;
 use self::var_def::parse_var_def;
 use self::expr::parse_expr_statement;
 use self::constraint::parse_constraint_def;
@@ -16,7 +18,7 @@ use nom::IResult;
 use std::str::from_utf8;
 
 named!(parse_ast_node<AstNode>,
-	alt_complete!(parse_constraint_def | parse_var_def | parse_expr_statement)
+	alt_complete!(parse_return | parse_constraint_def | parse_var_def | parse_expr_statement)
 );
 
 named!(pub parse_ast<Ast>,
