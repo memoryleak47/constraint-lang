@@ -1,4 +1,4 @@
-use ast::{Expr, PostOp, Op2};
+use ast::{AstNode, Expr, PostOp, Op2};
 use ctxt::Ctxt;
 use super::{ExecState, Val};
 
@@ -36,6 +36,9 @@ impl ExecState {
 					}
 				}
 
+
+				let mut return_value = None;
+
 				if let Some(Val::Fun { signature, body }) = self.eval(&**fun, ctxt) {
 					self.stack.push(HashMap::new());
 
@@ -49,13 +52,18 @@ impl ExecState {
 					}
 
 					for node in body.nodes.iter() {
-						self.exec_node(node, ctxt);
+						if let &AstNode::Return(ref expr) = node {
+							return_value = Some(self.eval(expr, ctxt).unwrap());
+							break;
+						} else {
+							self.exec_node(node, ctxt);
+						}
 					}
 
 					self.stack.pop();
 				} else { panic!("calling non-fun value"); }
 
-				return None;
+				return return_value;
 			},
 			&Expr::Op2(ref a, ref op, ref b) => {
 				let a = self.eval(a, ctxt).unwrap();
