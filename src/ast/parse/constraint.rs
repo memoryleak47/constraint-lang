@@ -1,6 +1,7 @@
 use ast::*;
 use super::ignore::{ignore1, ignore0};
 use super::name::parse_name;
+use ast::parse::keyword::parse_keyword;
 
 use nom::IResult;
 
@@ -90,7 +91,7 @@ named!(pub parse_c_expr<CExpr>,
 
 named!(pub parse_constraint_def<AstNode>,
     do_parse!(
-        tag!("constraint") >>
+        call!(parse_keyword, "constraint") >>
         ignore1 >>
         name: parse_name >>
         ignore0 >>

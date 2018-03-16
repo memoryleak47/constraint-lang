@@ -1,15 +1,12 @@
 use ast::*;
 
-use ast::parse::name::name_letter;
-
-use std::str::from_utf8;
+use ast::parse::keyword::parse_keyword;
 
 named!(pub parse_expr_bool<Expr>,
 	do_parse!(
-		val: alt!(tag!("true") | tag!("false")) >>
-		peek!(not!(name_letter)) >>
+		val: alt!(call!(parse_keyword, "true") | call!(parse_keyword, "false")) >>
 		({
-			match from_utf8(val).unwrap() {
+			match val.as_str() {
 				"true" => Expr::Bool(true),
 				"false" => Expr::Bool(false),
 				_ => panic!("This should not happen")

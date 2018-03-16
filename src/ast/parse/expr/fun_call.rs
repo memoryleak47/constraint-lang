@@ -19,6 +19,6 @@ named!(pub parse_fun_call<PostOp>,
 
 #[test]
 fn test1() {
-	let (i, o) = parse_fun_call("(2,3)".as_bytes()).unwrap();
+	let (i, _) = parse_fun_call("(2,3)".as_bytes()).unwrap();
 	assert!(i.is_empty());
 }

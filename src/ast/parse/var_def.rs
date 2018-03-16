@@ -5,8 +5,7 @@ use ast::*;
 use super::ignore::*;
 use super::expr::*;
 use super::name::parse_name;
-
-use std::str::from_utf8;
+use ast::parse::keyword::parse_keyword;
 
 named!(parse_var_set<AstNode>,
 	do_parse!(
@@ -26,7 +25,7 @@ named!(parse_var_set<AstNode>,
 
 named!(parse_var_dec<AstNode>,
 	do_parse!(
-		prefix: alt!(tag!("let") | tag!("global")) >>
+		prefix: alt!(call!(parse_keyword, "let") | call!(parse_keyword, "global")) >>
 		ignore1 >>
 		name: parse_name >>
 		ignore0 >>
@@ -34,7 +33,7 @@ named!(parse_var_dec<AstNode>,
 		ignore0 >>
 		(AstNode::VarDec(VarDec {
 			name: String::from(name),
-			prefix: match from_utf8(prefix).unwrap() {
+			prefix: match prefix.as_str() {
 					"let" => VarDecPrefix::Let,
 					"global" => VarDecPrefix::Global,
 					_ => panic!("This should not happen!")
@@ -48,7 +47,7 @@ named!(parse_var_dec<AstNode>,
 // This only consumes `let ` and creates the apropriate AstNode::VarDec, then afterwards the `x = 2;` will be parsed normally
 named!(parse_var_dec_peeky<AstNode>,
 	do_parse!(
-		prefix: alt!(tag!("let") | tag!("global")) >>
+		prefix: alt!(call!(parse_keyword, "let") | call!(parse_keyword, "global")) >>
 		ignore1 >>
 		name: peek!(
 			do_parse!(
@@ -61,7 +60,7 @@ named!(parse_var_dec_peeky<AstNode>,
 		) >>
 		(AstNode::VarDec(VarDec {
 			name: String::from(name),
-			prefix: match from_utf8(prefix).unwrap() {
+			prefix: match prefix.as_str() {
 					"let" => VarDecPrefix::Let,
 					"global" => VarDecPrefix::Global,
 					_ => panic!("This should not happen!")

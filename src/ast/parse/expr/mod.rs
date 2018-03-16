@@ -189,8 +189,6 @@ fn test_fun_call_expr_statement() {
 
 #[test]
 fn test_fun_call_expr() {
-	use nom::IResult;
-
 	let (i, o)  = parse_expr("2(2,3)".as_bytes()).unwrap();
 	assert!(i.is_empty());
 
