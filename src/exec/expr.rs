@@ -2,8 +2,6 @@ use ast::{Expr, PostOp, Op2};
 use ctxt::Ctxt;
 use super::{ExecState, Val};
 
-use std::collections::HashMap;
-
 impl ExecState {
 	pub fn exec_expr(&mut self, expr: &Expr, ctxt: &Ctxt) -> Option<Val> {
 		match expr {
@@ -37,7 +35,7 @@ impl ExecState {
 				}
 
 				if let Some(Val::Fun { signature, body }) = self.exec_expr(&**fun, ctxt) {
-					self.stack.push(HashMap::new());
+					self.push_stack();
 
 					assert_eq!(args.len(), signature.len());
 
@@ -50,7 +48,7 @@ impl ExecState {
 
 					let ret = self.exec_ast(&body, ctxt);
 
-					self.stack.pop();
+					self.pop_stack();
 
 					return ret;
 				} else { panic!("calling non-fun value"); }

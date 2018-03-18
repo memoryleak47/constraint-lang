@@ -38,20 +38,20 @@ impl ExecState {
 		}
 	}
 
-	fn global(&self) -> &HashMap<String, Option<usize>> {
-		self.stack.first().unwrap()
-	}
-
 	fn global_mut(&mut self) -> &mut HashMap<String, Option<usize>> {
 		self.stack.first_mut().unwrap()
 	}
 
-	fn local(&self) -> &HashMap<String, Option<usize>> {
-		self.stack.last().unwrap()
-	}
-
 	fn local_mut(&mut self) -> &mut HashMap<String, Option<usize>> {
 		self.stack.last_mut().unwrap()
+	}
+
+	fn push_stack(&mut self) {
+		self.stack.push(HashMap::new());
+	}
+
+	fn pop_stack(&mut self) {
+		self.stack.pop();
 	}
 
 	fn find_var(&self, name: &str) -> Option<usize> {
@@ -100,12 +100,18 @@ impl ExecState {
 			&AstNode::If { ref cases, ref otherwise } => {
 				for &(ref condition, ref body) in cases {
 					if let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
-						return self.exec_ast(body, ctxt);
+						self.push_stack();
+						let res = self.exec_ast(body, ctxt);
+						self.pop_stack();
+						return res;
 					}
 				}
 
 				if let &Some(ref x) = otherwise {
-					return self.exec_ast(&**x, ctxt);
+					self.push_stack();
+					let res = self.exec_ast(&**x, ctxt);
+					self.pop_stack();
+					return res;
 				} else { return None; }
 			},
 			&AstNode::Return(ref expr) => {
