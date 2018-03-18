@@ -22,6 +22,7 @@ pub enum AstNode {
 		cases: Vec<(Expr, Ast)>,
 		otherwise: Option<Ast>,
 	},
+	While(Expr, Ast),
 }
 
 // eg. `constraint X = {} | {};`

@@ -114,6 +114,16 @@ impl ExecState {
 					return res;
 				} else { return None; }
 			},
+			&AstNode::While(ref condition, ref body) => {
+				while let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
+					self.push_stack();
+					if let Some(v) = self.exec_ast(body, ctxt) {
+						return Some(v);
+					}
+					self.pop_stack();
+				}
+				return None;
+			},
 			&AstNode::Return(ref expr) => {
 				return Some(self.exec_expr(expr, ctxt).unwrap());
 			},
