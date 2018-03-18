@@ -18,7 +18,10 @@ pub enum AstNode {
 	CDef(CDef),
 	Expr(Expr),
 	Return(Expr),
-	If(Expr, Box<Ast>),
+	If {
+		cases: Vec<(Expr, Ast)>,
+		otherwise: Option<Box<Ast>>,
+	},
 }
 
 // eg. `constraint X = {} | {};`

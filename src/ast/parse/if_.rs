@@ -9,12 +9,50 @@ named!(pub parse_if<AstNode>,
 	do_parse!(
 		call!(parse_keyword, "if") >>
 		ignore0 >>
-		cond: parse_expr >>
+		head_cond: parse_expr >>
 		ignore0 >>
 		char!('{') >>
-		body: parse_ast >>
+		ignore0 >>
+		head_body: parse_ast >>
 		char!('}') >>
 		ignore0 >>
-		(AstNode::If(cond, Box::new(body)))
+		tail_cases: many0!(
+			do_parse!(
+				call!(parse_keyword, "else") >>
+				ignore0 >>
+				call!(parse_keyword, "if") >>
+				ignore0 >>
+				tail_cond: parse_expr >>
+				ignore0 >>
+				char!('{') >>
+				ignore0 >>
+				tail_body: parse_ast >>
+				char!('}') >>
+				ignore0 >>
+				((tail_cond, tail_body))
+			)
+		) >>
+		otherwise: opt!(
+			complete!(do_parse!(
+				call!(parse_keyword, "else") >>
+				ignore0 >>
+				char!('{') >>
+				ignore0 >>
+				otherwise_inner: parse_ast >>
+				char!('}') >>
+				ignore0 >>
+				(otherwise_inner)
+			))
+		) >>
+		({
+			let mut cases = Vec::new();
+			cases.push((head_cond, head_body));
+			cases.extend(tail_cases);
+
+			AstNode::If {
+				cases,
+				otherwise: otherwise.map(Box::new),
+			}
+		})
 	)
 );

@@ -97,14 +97,16 @@ impl ExecState {
 			&AstNode::Expr(ref expr) => {
 				self.exec_expr(expr, ctxt);
 			},
-			&AstNode::If(ref condition, ref body) => {
-				if let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
-					for node in body.nodes.iter() {
-						if let Some(v) = self.exec_ast_node(node, ctxt) {
-							return Some(v);
-						}
+			&AstNode::If { ref cases, ref otherwise } => {
+				for &(ref condition, ref body) in cases {
+					if let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
+						return self.exec_ast(body, ctxt);
 					}
 				}
+
+				if let &Some(ref x) = otherwise {
+					return self.exec_ast(&**x, ctxt);
+				} else { return None; }
 			},
 			&AstNode::Return(ref expr) => {
 				return Some(self.exec_expr(expr, ctxt).unwrap());
