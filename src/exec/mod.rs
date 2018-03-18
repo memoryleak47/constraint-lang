@@ -109,7 +109,7 @@ impl ExecState {
 
 				if let &Some(ref x) = otherwise {
 					self.push_stack();
-					let res = self.exec_ast(&**x, ctxt);
+					let res = self.exec_ast(x, ctxt);
 					self.pop_stack();
 					return res;
 				} else { return None; }

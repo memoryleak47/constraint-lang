@@ -20,7 +20,7 @@ pub enum AstNode {
 	Return(Expr),
 	If {
 		cases: Vec<(Expr, Ast)>,
-		otherwise: Option<Box<Ast>>,
+		otherwise: Option<Ast>,
 	},
 }
 

@@ -49,10 +49,7 @@ named!(pub parse_if<AstNode>,
 			cases.push((head_cond, head_body));
 			cases.extend(tail_cases);
 
-			AstNode::If {
-				cases,
-				otherwise: otherwise.map(Box::new),
-			}
+			AstNode::If { cases, otherwise }
 		})
 	)
 );
