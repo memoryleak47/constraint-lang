@@ -1,11 +1,11 @@
-use ast::{AstNode, Expr, PostOp, Op2};
+use ast::{Expr, PostOp, Op2};
 use ctxt::Ctxt;
 use super::{ExecState, Val};
 
 use std::collections::HashMap;
 
 impl ExecState {
-	pub fn eval(&mut self, expr: &Expr, ctxt: &Ctxt) -> Option<Val> {
+	pub fn exec_expr(&mut self, expr: &Expr, ctxt: &Ctxt) -> Option<Val> {
 		match expr {
 			&Expr::Null => Some(Val::Null),
 			&Expr::Num(x) => Some(Val::Num(x)),
@@ -13,61 +13,51 @@ impl ExecState {
 			&Expr::Bool(x) => Some(Val::Bool(x)),
 			&Expr::Array(ref x) => Some(Val::Array(
 				x.iter()
-					.map(|e| self.eval(e, ctxt).unwrap()).collect()
+					.map(|e| self.exec_expr(e, ctxt).unwrap()).collect()
 			)),
 			&Expr::Tuple(ref x) => Some(Val::Tuple(
 				x.iter()
-					.map(|e| self.eval(e, ctxt).unwrap()).collect()
+					.map(|e| self.exec_expr(e, ctxt).unwrap()).collect()
 			)),
 			&Expr::Object(ref x) => Some(Val::Object(
 				x.iter()
 					.map(|(key, e)|
-						(key.to_string(), Box::new(self.eval(e, ctxt).unwrap()))
+						(key.to_string(), Box::new(self.exec_expr(e, ctxt).unwrap()))
 					).collect()
 			)),
 			&Expr::PostOp(ref fun, PostOp::FunCall(ref args)) => {
 				if let &Expr::Var(ref s) = &**fun {
 					if s == "print" {
 						for arg in args {
-							let val = self.eval(&arg, ctxt).unwrap();
+							let val = self.exec_expr(&arg, ctxt).unwrap();
 							println!("{:?}", val);
 						}
 						return None;
 					}
 				}
 
-
-				let mut return_value = None;
-
-				if let Some(Val::Fun { signature, body }) = self.eval(&**fun, ctxt) {
+				if let Some(Val::Fun { signature, body }) = self.exec_expr(&**fun, ctxt) {
 					self.stack.push(HashMap::new());
 
 					assert_eq!(args.len(), signature.len());
 
 					for (c_item, expr) in signature.iter().zip(args.iter()) {
-						let val = self.eval(expr, ctxt).unwrap();
+						let val = self.exec_expr(expr, ctxt).unwrap();
 						let i = self.heap.alloc(val);
 						self.local_mut().insert(c_item.name.to_string(), Some(i));
 						// TODO typechecking
 					}
 
-					for node in body.nodes.iter() {
-						if let &AstNode::Return(ref expr) = node {
-							return_value = Some(self.eval(expr, ctxt).unwrap());
-							break;
-						} else {
-							self.exec_node(node, ctxt);
-						}
-					}
+					let ret = self.exec_ast(&body, ctxt);
 
 					self.stack.pop();
-				} else { panic!("calling non-fun value"); }
 
-				return return_value;
+					return ret;
+				} else { panic!("calling non-fun value"); }
 			},
 			&Expr::Op2(ref a, ref op, ref b) => {
-				let a = self.eval(a, ctxt).unwrap();
-				let b = self.eval(b, ctxt).unwrap();
+				let a = self.exec_expr(a, ctxt).unwrap();
+				let b = self.exec_expr(b, ctxt).unwrap();
 
 				let a = if let Val::Num(x) = a { x } else { panic!("operation on non-num value"); };
 				let b = if let Val::Num(x) = b { x } else { panic!("operation on non-num value"); };
@@ -93,14 +83,6 @@ impl ExecState {
 				self.get_var(name)
 					.and_then(|i| self.heap.get(i))
 					.map(|x| x.clone())
-			},
-			&Expr::If { ref condition, ref body } => {
-				if let Val::Bool(true) = self.eval(&**condition, ctxt).unwrap() {
-					for node in body.nodes.iter() {
-						self.exec_node(node, ctxt);
-					}
-					return None; // maybe let it return something later
-				} else { None }
 			},
 			_ => unimplemented!(),
 		}

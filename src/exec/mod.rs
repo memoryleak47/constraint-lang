@@ -1,5 +1,5 @@
 mod heap;
-mod eval;
+mod expr;
 
 use self::heap::Heap;
 use ctxt::Ctxt;
@@ -27,7 +27,7 @@ struct ExecState {
 
 pub fn exec(ctxt: Ctxt) {
 	let mut state = ExecState::new();
-	state.exec(ctxt);
+	state.exec_ast(&ctxt.ast, &ctxt);
 }
 
 impl ExecState {
@@ -72,13 +72,16 @@ impl ExecState {
 		}
 	}
 
-	fn exec(&mut self, ctxt: Ctxt) {
-		for node in ctxt.ast.nodes.iter() {
-			self.exec_node(node, &ctxt);
+	fn exec_ast(&mut self, ast: &Ast, ctxt: &Ctxt) -> Option<Val> {
+		for node in ast.nodes.iter() {
+			if let Some(v) = self.exec_ast_node(node, ctxt) {
+				return Some(v);
+			}
 		}
+		return None;
 	}
 
-	pub fn exec_node(&mut self, node: &AstNode, ctxt: &Ctxt) {
+	pub fn exec_ast_node(&mut self, node: &AstNode, ctxt: &Ctxt) -> Option<Val> {
 		match node {
 			&AstNode::VarDec(VarDec { ref name, ref prefix, .. }) => {
 				(match prefix {
@@ -87,14 +90,28 @@ impl ExecState {
 				}).insert(name.to_string(), None);
 			},
 			&AstNode::VarSet(VarSet { ref name, ref expr }) => {
-				let val = self.eval(expr, ctxt).unwrap();
+				let val = self.exec_expr(expr, ctxt).unwrap();
 				let i = self.heap.alloc(val);
 				self.set_var(name, i);
 			},
 			&AstNode::Expr(ref expr) => {
-				self.eval(expr, ctxt);
+				self.exec_expr(expr, ctxt);
+			},
+			&AstNode::If(ref condition, ref body) => {
+				if let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
+					for node in body.nodes.iter() {
+						if let Some(v) = self.exec_ast_node(node, ctxt) {
+							return Some(v);
+						}
+					}
+				}
+			},
+			&AstNode::Return(ref expr) => {
+				return Some(self.exec_expr(expr, ctxt).unwrap());
 			},
 			_ => panic!("This should not happen")
-		}
+		};
+
+		return None;
 	}
 }

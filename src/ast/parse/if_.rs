@@ -3,10 +3,11 @@ use ast::*;
 use ast::parse::ignore::ignore0;
 use ast::parse::expr::parse_expr;
 use ast::parse::parse_ast;
+use ast::parse::keyword::parse_keyword;
 
-named!(pub parse_expr_if<Expr>,
+named!(pub parse_if<AstNode>,
 	do_parse!(
-		tag!("if") >>
+		call!(parse_keyword, "if") >>
 		ignore0 >>
 		cond: parse_expr >>
 		ignore0 >>
@@ -14,6 +15,6 @@ named!(pub parse_expr_if<Expr>,
 		body: parse_ast >>
 		char!('}') >>
 		ignore0 >>
-		(Expr::If { condition: Box::new(cond), body })
+		(AstNode::If(cond, Box::new(body)))
 	)
 );

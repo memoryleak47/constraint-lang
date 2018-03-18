@@ -18,6 +18,7 @@ pub enum AstNode {
 	CDef(CDef),
 	Expr(Expr),
 	Return(Expr),
+	If(Expr, Box<Ast>),
 }
 
 // eg. `constraint X = {} | {};`
@@ -135,11 +136,6 @@ pub enum Expr {
 	Array(Vec<Expr>),
 	Tuple(Vec<Expr>),
 	Object(HashMap<String, Box<Expr>>), // { f = 2 }
-
-	If {
-		condition: Box<Expr>,
-		body: Ast
-	}
 }
 
 #[derive(Debug, Clone)]
