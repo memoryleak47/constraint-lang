@@ -1,4 +1,4 @@
-use ast::{Expr, PostOp, Op2};
+use ast::{CtrlFlow, Expr, PostOp, Op2};
 use ctxt::Ctxt;
 use super::{ExecState, Val};
 
@@ -35,8 +35,6 @@ impl ExecState {
 				}
 
 				if let Some(Val::Fun { signature, body }) = self.exec_expr(&**fun, ctxt) {
-					self.push_stack();
-
 					assert_eq!(args.len(), signature.len());
 
 					for (c_item, expr) in signature.iter().zip(args.iter()) {
@@ -46,10 +44,16 @@ impl ExecState {
 						// TODO typechecking
 					}
 
-					let ret = self.exec_ast(&body, ctxt);
+					let mut ret = None;
 
+					self.push_stack();
+					for node in body.nodes.iter() {
+						if let Some(CtrlFlow::Return(x)) = self.exec_ast_node(node, ctxt) {
+							ret = x;
+							break;
+						}
+					}
 					self.pop_stack();
-
 					return ret;
 				} else { panic!("calling non-fun value"); }
 			},

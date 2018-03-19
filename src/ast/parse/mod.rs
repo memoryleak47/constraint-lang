@@ -1,7 +1,7 @@
 mod name;
 mod keyword;
 mod ignore;
-mod return_;
+mod ctrl_flow;
 mod var_def;
 mod expr;
 mod if_;
@@ -9,7 +9,7 @@ mod while_;
 mod constraint;
 
 use self::ignore::ignore0;
-use self::return_::parse_return;
+use self::ctrl_flow::parse_ctrl_flow;
 use self::var_def::parse_var_def;
 use self::expr::parse_expr_statement;
 use self::if_::parse_if;
@@ -22,7 +22,7 @@ use nom::IResult;
 use std::str::from_utf8;
 
 named!(parse_ast_node<AstNode>,
-	alt_complete!(parse_return | parse_if | parse_while | parse_constraint_def | parse_var_def | parse_expr_statement)
+	alt_complete!(parse_ctrl_flow | parse_if | parse_while | parse_constraint_def | parse_var_def | parse_expr_statement)
 );
 
 named!(pub parse_ast<Ast>,

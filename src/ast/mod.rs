@@ -12,12 +12,31 @@ pub struct Ast {
 }
 
 #[derive(Debug, Clone)]
+pub enum CtrlFlow<T: Clone> {
+	Return(Option<T>),
+	Break,
+	Continue,
+}
+
+impl<T: Clone> CtrlFlow<T> {
+	pub fn map<F, U: Clone>(&self, f: F) -> CtrlFlow<U>
+		where F: FnOnce(T) -> U
+		{
+			match self {
+				&CtrlFlow::Return(ref x) => CtrlFlow::Return(x.clone().map(f)),
+				&CtrlFlow::Break => CtrlFlow::Break,
+				&CtrlFlow::Continue => CtrlFlow::Continue,
+			}
+	}
+}
+
+#[derive(Debug, Clone)]
 pub enum AstNode {
 	VarDec(VarDec),
 	VarSet(VarSet),
 	CDef(CDef),
 	Expr(Expr),
-	Return(Expr),
+	CtrlFlow(CtrlFlow<Expr>),
 	If {
 		cases: Vec<(Expr, Ast)>,
 		otherwise: Option<Ast>,

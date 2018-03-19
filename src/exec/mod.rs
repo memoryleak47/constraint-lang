@@ -3,7 +3,7 @@ mod expr;
 
 use self::heap::Heap;
 use ctxt::Ctxt;
-use ast::{Ast, CItem, AstNode, VarDecPrefix, VarDec, VarSet};
+use ast::{CtrlFlow, Ast, CItem, AstNode, VarDecPrefix, VarDec, VarSet};
 
 use std::collections::HashMap;
 
@@ -27,7 +27,9 @@ struct ExecState {
 
 pub fn exec(ctxt: Ctxt) {
 	let mut state = ExecState::new();
-	state.exec_ast(&ctxt.ast, &ctxt);
+	for node in ctxt.ast.nodes.iter() {
+		state.exec_ast_node(node, &ctxt);
+	}
 }
 
 impl ExecState {
@@ -72,16 +74,7 @@ impl ExecState {
 		}
 	}
 
-	fn exec_ast(&mut self, ast: &Ast, ctxt: &Ctxt) -> Option<Val> {
-		for node in ast.nodes.iter() {
-			if let Some(v) = self.exec_ast_node(node, ctxt) {
-				return Some(v);
-			}
-		}
-		return None;
-	}
-
-	pub fn exec_ast_node(&mut self, node: &AstNode, ctxt: &Ctxt) -> Option<Val> {
+	pub fn exec_ast_node(&mut self, node: &AstNode, ctxt: &Ctxt) -> Option<CtrlFlow<Val>> {
 		match node {
 			&AstNode::VarDec(VarDec { ref name, ref prefix, .. }) => {
 				(match prefix {
@@ -100,32 +93,57 @@ impl ExecState {
 			&AstNode::If { ref cases, ref otherwise } => {
 				for &(ref condition, ref body) in cases {
 					if let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
+						let mut res = None;
+
 						self.push_stack();
-						let res = self.exec_ast(body, ctxt);
+						for node in body.nodes.iter() {
+							if let Some(cf) = self.exec_ast_node(node, ctxt) {
+								res = Some(cf);
+								break;
+							}
+						}
 						self.pop_stack();
 						return res;
 					}
 				}
 
-				if let &Some(ref x) = otherwise {
+				if let &Some(ref body) = otherwise {
+					let mut res = None;
+
 					self.push_stack();
-					let res = self.exec_ast(x, ctxt);
+					for node in body.nodes.iter() {
+						if let Some(cf) = self.exec_ast_node(node, ctxt) {
+							res = Some(cf);
+							break;
+						}
+					}
 					self.pop_stack();
 					return res;
-				} else { return None; }
+				}
 			},
 			&AstNode::While(ref condition, ref body) => {
 				while let Val::Bool(true) = self.exec_expr(condition, ctxt).unwrap() {
 					self.push_stack();
-					if let Some(v) = self.exec_ast(body, ctxt) {
-						return Some(v);
+					for node in body.nodes.iter() {
+						match self.exec_ast_node(node, ctxt) {
+							Some(CtrlFlow::Return(x)) => {
+								self.pop_stack();
+								return Some(CtrlFlow::Return(x));
+							},
+							Some(CtrlFlow::Break) => {
+								self.pop_stack();
+								return None;
+							},
+							Some(CtrlFlow::Continue) => break, // not even a joke..
+							None => {},
+						}
 					}
 					self.pop_stack();
 				}
 				return None;
 			},
-			&AstNode::Return(ref expr) => {
-				return Some(self.exec_expr(expr, ctxt).unwrap());
+			&AstNode::CtrlFlow(ref cf) => {
+				return Some(cf.map(|x| self.exec_expr(&x, ctxt).unwrap() ))
 			},
 			_ => panic!("This should not happen")
 		};
