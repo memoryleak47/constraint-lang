@@ -37,6 +37,8 @@ impl ExecState {
 				if let Some(Val::Fun { signature, body }) = self.exec_expr(&**fun, ctxt) {
 					assert_eq!(args.len(), signature.len());
 
+					self.push_stack();
+
 					for (c_item, expr) in signature.iter().zip(args.iter()) {
 						let val = self.exec_expr(expr, ctxt).unwrap();
 						let i = self.heap.alloc(val);
@@ -46,14 +48,15 @@ impl ExecState {
 
 					let mut ret = None;
 
-					self.push_stack();
 					for node in body.nodes.iter() {
 						if let Some(CtrlFlow::Return(x)) = self.exec_ast_node(node, ctxt) {
 							ret = x;
 							break;
 						}
 					}
+
 					self.pop_stack();
+
 					return ret;
 				} else { panic!("calling non-fun value"); }
 			},
