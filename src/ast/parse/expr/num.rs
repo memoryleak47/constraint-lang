@@ -25,9 +25,9 @@ named!(pub parse_expr_num<Expr>,
 		ignore0 >>
 		({
 			if negative.is_some() {
-				Expr::Num(-num)
+				Expr::Val(Val::Num(-num))
 			} else {
-				Expr::Num(num)
+				Expr::Val(Val::Num(num))
 			}
 		})
 	)

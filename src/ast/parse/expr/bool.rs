@@ -7,8 +7,8 @@ named!(pub parse_expr_bool<Expr>,
 		val: alt!(call!(parse_keyword, "true") | call!(parse_keyword, "false")) >>
 		({
 			match val.as_str() {
-				"true" => Expr::Bool(true),
-				"false" => Expr::Bool(false),
+				"true" => Expr::Val(Val::Bool(true)),
+				"false" => Expr::Val(Val::Bool(false)),
 				_ => panic!("This should not happen")
 			}
 		})

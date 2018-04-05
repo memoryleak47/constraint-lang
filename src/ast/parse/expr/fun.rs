@@ -4,6 +4,8 @@ use ast::Expr;
 use ast::parse::parse_ast;
 use ast::parse::keyword::parse_keyword;
 
+use val::Val;
+
 named!(pub parse_expr_fun<Expr>,
 	do_parse!(
 		call!(parse_keyword, "fun") >>
@@ -18,7 +20,7 @@ named!(pub parse_expr_fun<Expr>,
 		body: parse_ast >>
 		char!('}') >>
 		ignore0 >>
-		(Expr::Fun { signature, body })
+		(Expr::Val(Val::Fun { signature, body }))
 	)
 );
 

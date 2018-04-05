@@ -1,8 +1,6 @@
 mod build;
 pub use self::build::build as build;
 
-use std::collections::HashMap;
-
 use op::{PreOp, Op2};
 use ast::Ast;
 use val::Val;

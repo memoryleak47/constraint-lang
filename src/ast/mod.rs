@@ -3,8 +3,7 @@ mod parse;
 pub use self::parse::parse;
 use ::op::{PreOp, Op2, PostOp};
 use ::cexpr::{CExpr, CItem};
-
-use std::collections::HashMap;
+use ::val::Val;
 
 // C is short for Constraint
 
@@ -18,18 +17,6 @@ pub enum CtrlFlow<T: Clone> {
 	Return(Option<T>),
 	Break,
 	Continue,
-}
-
-impl<T: Clone> CtrlFlow<T> {
-	pub fn map<F, U: Clone>(&self, f: F) -> CtrlFlow<U>
-		where F: FnOnce(T) -> U
-		{
-			match self {
-				&CtrlFlow::Return(ref x) => CtrlFlow::Return(x.clone().map(f)),
-				&CtrlFlow::Break => CtrlFlow::Break,
-				&CtrlFlow::Continue => CtrlFlow::Continue,
-			}
-	}
 }
 
 #[derive(Debug, Clone)]
@@ -59,18 +46,8 @@ pub enum Expr {
 	PreOp(PreOp, Box<Expr>),
 	PostOp(Box<Expr>, PostOp<Vec<Expr>>),
 	Op2(Box<Expr>, Op2, Box<Expr>),
-	Fun {
-		signature: Vec<CItem>,
-		body: Ast
-	}, // fun(x, y) { return x+y; }
-	String(String),
+	Val(Val<Vec<CItem>, Ast>),
 	Var(String),
-	Null, // the `null` expression
-	Num(f64),
-	Bool(bool),
-	Array(Vec<Expr>),
-	Tuple(Vec<Expr>),
-	Object(HashMap<String, Box<Expr>>), // { f = 2 }
 }
 
 #[derive(Debug, Clone)]

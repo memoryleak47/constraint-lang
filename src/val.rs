@@ -1,5 +1,8 @@
 use std::collections::HashMap;
 
+// S is the function signature
+// T is the function body
+#[derive(Debug, Clone)]
 pub enum Val<S, T> {
 	Fun {
 		signature: S,
