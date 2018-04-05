@@ -2,8 +2,11 @@
 extern crate nom;
 
 mod cli;
+mod op;
+mod val;
+mod cexpr;
 mod ast;
-mod ctxt;
+mod bytecode;
 mod exec;
 
 use cli::get_code;
@@ -13,7 +16,7 @@ fn main2() -> Result<(), String> {
 	exec(
 		get_code()
 			.and_then(ast::parse)
-			.and_then(ctxt::build)?
+			.and_then(bytecode::build)?
 	);
 	Ok(())
 }

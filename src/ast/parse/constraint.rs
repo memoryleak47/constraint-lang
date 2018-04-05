@@ -2,6 +2,7 @@ use ast::*;
 use super::ignore::{ignore1, ignore0};
 use super::name::parse_name;
 use ast::parse::keyword::parse_keyword;
+use cexpr::{CExpr, CItem, CBlock};
 
 use nom::IResult;
 

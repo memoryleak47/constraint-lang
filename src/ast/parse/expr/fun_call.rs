@@ -1,9 +1,9 @@
 use ast::*;
 
 use super::super::ignore::ignore0;
-use super::super::expr::parse_expr;
+use super::super::expr::{parse_expr, ExprPostOp};
 
-named!(pub parse_fun_call<PostOp>,
+named!(pub parse_fun_call<ExprPostOp>,
 	do_parse!(
 		tag!("(") >>
 		ignore0 >>

@@ -12,6 +12,8 @@ use self::fun_call::parse_fun_call;
 
 use ast::*;
 use super::ignore::ignore0;
+use	::op::{PreOp, Op, PostOp};
+pub type ExprPostOp = PostOp<Vec<Expr>>;
 
 use std::str::from_utf8;
 
@@ -29,7 +31,7 @@ named!(parse_pre_op<PreOp>,
 	)
 );
 
-named!(parse_post_op<PostOp>,
+named!(parse_post_op<ExprPostOp>,
 	do_parse!(
 		x: parse_fun_call >>
 		(x)
@@ -87,8 +89,8 @@ named!(parse_op2<Op2>,
 	)
 );
 
-type InitType = (Option<PreOp>, Expr, Option<PostOp>);
-type TailElem = (Op2, Option<PreOp>, Expr, Option<PostOp>);
+type InitType = (Option<PreOp>, Expr, Option<ExprPostOp>);
+type TailElem = (Op2, Option<PreOp>, Expr, Option<ExprPostOp>);
 
 fn assemble_expr(init: InitType, mut tail: Vec<TailElem>) -> Expr {
 	const MAX_PRIO: u8 = 100;
